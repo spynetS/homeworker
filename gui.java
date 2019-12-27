@@ -77,6 +77,8 @@ public class gui extends JFrame {
     private JButton addWordEdit;
     private JTextField NewWord2;
     private JPanel panele1;
+    private JLabel AmountOfCorect;
+    private JLabel CorectWordsLabel;
     private JLabel AddNewLineLabel;
     private JLabel ChnageLineLabel;
     public Color colors;
@@ -329,6 +331,7 @@ public class gui extends JFrame {
         if(answer.getText().equals(StringSplitet(",",line32,1))) {
             try {
                 intplus++;
+                AmountOfCorect.setText(String.valueOf(intplus));
                 StartVocabulary(intplus);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -526,6 +529,8 @@ public class gui extends JFrame {
         NewWord2.setFont(new Font(font, Font.PLAIN, fontSize));
         addWordEdit.setFont(new Font(font, Font.PLAIN, fontSize));
         question.setFont(new Font(font, Font.PLAIN, fontSize+3));
+        CorectWordsLabel.setFont(new Font(font, Font.PLAIN, fontSize+3));
+        AmountOfCorect.setFont(new Font(font, Font.PLAIN, fontSize+3));
 
         rootName.setBackground(color);
         tab1.setBackground(color);
