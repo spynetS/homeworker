@@ -77,8 +77,6 @@ public class gui extends JFrame {
     private JButton addWordEdit;
     private JTextField NewWord2;
     private JPanel panele1;
-    private JLabel AmountOfCorect;
-    private JLabel CorectWordsLabel;
     private JLabel AddNewLineLabel;
     private JLabel ChnageLineLabel;
     public Color colors;
@@ -100,8 +98,8 @@ public class gui extends JFrame {
     }
 
     public gui() {
-        getRootPane().setDefaultButton(addWordsToVocabulary);
-        getRootPane().setDefaultButton(subbmitButton);
+        //.getRootPane().setDefaultButton(addWordsToVocabulary);
+        getRootPane().setDefaultButton(correctButton);
 
         list1Edit.setModel(modelList1Edit);
         list2Edit.setModel(modelList2Edit);
@@ -212,8 +210,14 @@ public class gui extends JFrame {
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                if(list1.getSelectedValue().toString().contains("Vocabulary"))
+                {
+                    WarningDeleteWindow wdw = new WarningDeleteWindow(list1.getSelectedValue().toString());
+                    wdw.setVisible(true);
+                }
+
                 try {
-                    fh.DeleteHomeWork(list1.getSelectedValue().toString(),"Files/HomeWorks");
+                    fh.DeleteHomeWork(list1.getSelectedValue().toString(),"Files/HomeWorkers");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -260,7 +264,9 @@ public class gui extends JFrame {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 try {
-                    fh.Writer(false,""," ", subjekt.getText(), task.getSelectedItem().toString(), date.getText(), HomeWorksG);
+                    String name = subjekt.getText()+" "+ task.getSelectedItem().toString()+" "+ date.getText();
+                    fh.NewHomework(name);
+                    //fh.Writer(false,""," ", subjekt.getText(), task.getSelectedItem().toString(), date.getText(), HomeWorksG);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -331,7 +337,6 @@ public class gui extends JFrame {
         if(answer.getText().equals(StringSplitet(",",line32,1))) {
             try {
                 intplus++;
-                AmountOfCorect.setText(String.valueOf(intplus));
                 StartVocabulary(intplus);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -424,8 +429,8 @@ public class gui extends JFrame {
         while ((CurrentLine = br.readLine()) != null) {
             String[] CurrentLineSplited = CurrentLine.split(",");
             String prod = CurrentLineSplited[0] + " " + CurrentLineSplited[1] + " " + CurrentLineSplited[2];
-                VocabularyEdit.addItem(prod);
-                Vocabulary.addItem(prod);
+            VocabularyEdit.addItem(prod);
+            Vocabulary.addItem(prod);
         }
     }
 
@@ -529,8 +534,6 @@ public class gui extends JFrame {
         NewWord2.setFont(new Font(font, Font.PLAIN, fontSize));
         addWordEdit.setFont(new Font(font, Font.PLAIN, fontSize));
         question.setFont(new Font(font, Font.PLAIN, fontSize+3));
-        CorectWordsLabel.setFont(new Font(font, Font.PLAIN, fontSize+3));
-        AmountOfCorect.setFont(new Font(font, Font.PLAIN, fontSize+3));
 
         rootName.setBackground(color);
         tab1.setBackground(color);
@@ -547,12 +550,15 @@ public class gui extends JFrame {
     }
 
     public void AddToList(String output) throws Exception {
-        File file = new File(HomeWorksG);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String st;
+        File folder = new File("Files/HomeWorkers/");
+        File[] listOfFiles = folder.listFiles();
 
-        while ((st = br.readLine()) != null) {
-            model.addElement(st);
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                model.addElement(listOfFiles[i].getName());
+            } else if (listOfFiles[i].isDirectory()) {
+                System.out.println("Directory " + listOfFiles[i].getName());
+            }
         }
     }
 
