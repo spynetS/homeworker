@@ -35,7 +35,6 @@ public class gui extends JFrame {
     public JComboBox language;
     public JComboBox inOrder;
     public String fontSize;
-
     public JTextField answer;
     public JButton correctButton;
     public JPanel panel1;
@@ -77,8 +76,13 @@ public class gui extends JFrame {
     private JButton addWordEdit;
     private JTextField NewWord2;
     private JPanel panele1;
+    private JLabel rightAsnwerCounter;
     private JLabel AddNewLineLabel;
     private JLabel ChnageLineLabel;
+    public String fontlabel = fontSize;
+    public int languageSelected =0;
+    public int rightlanguageSelected =1;
+
     public Color colors;
     boolean asd =true;
     int intplus=0;
@@ -120,11 +124,31 @@ public class gui extends JFrame {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+        language.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switch (language.getSelectedIndex())
+                {
+                    case 0:
+                        rightlanguageSelected=1;
+                        languageSelected =0;
+                        break;
+                    case 1:
+                        rightlanguageSelected =0;
+                        languageSelected =1;
+                        break;
+
+                }
+            }
+        });
+
         correctButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent){
                 try {
-                    GetRightAnswer();
+                    GetRightAnswer(rightlanguageSelected);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -161,7 +185,7 @@ public class gui extends JFrame {
         deleteProdButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                DeleteVocabularyProdjekt();
+                DeleteVocabularyProdjekt(VocabularyEdit.getSelectedItem().toString());
             }
         });
 
@@ -171,7 +195,7 @@ public class gui extends JFrame {
                 try {
                     intplus=0;
 
-                    StartVocabulary(0);
+                    StartVocabulary(0,languageSelected);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -213,7 +237,7 @@ public class gui extends JFrame {
                 if(list1.getSelectedValue().toString().contains("Vocabulary"))
                 {
                     WarningDeleteWindow wdw = new WarningDeleteWindow(list1.getSelectedValue().toString());
-                    wdw.setVisible(true);
+                    wdw.Start();
                 }
 
                 try {
@@ -327,22 +351,43 @@ public class gui extends JFrame {
         }
     }
 
-    private void GetRightAnswer() throws Exception {
+    private void GetRightAnswer(int lang) throws Exception {
         String name = Vocabulary.getSelectedItem().toString();
         String name1 = StringSplitet(" ",name,0)+","+StringSplitet(" ",name,1)+","+StringSplitet(" ",name,2);
         File file = new File("Files/Vocabularys/"+name1);
         String line32 = Files.readAllLines(Paths.get("Files/Vocabularys/"+name1)).get(intplus);
 
 
-        if(answer.getText().equals(StringSplitet(",",line32,1))) {
+        if(answer.getText().equals(StringSplitet(",",line32,lang))) {
             try {
                 intplus++;
-                StartVocabulary(intplus);
+                StartVocabulary(intplus,languageSelected);
+                String s = String.valueOf(intplus);
+                rightAsnwerCounter.setText(s);
+                rightAsnwerCounter.setForeground(Color.GREEN);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             answer.setText("");
 
+        }
+        else
+        {
+            rightAsnwerCounter.setForeground(Color.red);
+            rightAsnwerCounter.setFont(new Font("sad", Font.PLAIN, 35));
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            try {
+                                ReadSettings();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    50
+            );
         }
     }
 
@@ -362,14 +407,14 @@ public class gui extends JFrame {
         this.dispose();
     }
 
-    public void StartVocabulary(int lineNumber) throws Exception {
+    public void StartVocabulary(int lineNumber,int lang) throws Exception {
         String name = Vocabulary.getSelectedItem().toString();
         String name1 = StringSplitet(" ",name,0)+","+StringSplitet(" ",name,1)+","+StringSplitet(" ",name,2);
         File file = new File("Files/Vocabularys/"+name1);
 
         try{
             String line32 = Files.readAllLines(Paths.get("Files/Vocabularys/"+name1)).get(lineNumber);
-            question.setText(StringSplitet(",",line32,0));
+            question.setText(StringSplitet(",",line32,lang));
         }
         catch (Exception e)
         {
@@ -387,18 +432,14 @@ public class gui extends JFrame {
 
     }
 
-    public void DeleteVocabularyProdjekt() {
-        String name = VocabularyEdit.getSelectedItem().toString();
+    public void DeleteVocabularyProdjekt(String vocnam) {
+        String name = vocnam;
         String name1 = StringSplitet(" ",name,0)+","+StringSplitet(" ",name,1)+","+StringSplitet(" ",name,2);
         File file = new File("Files/Vocabularys/"+name1);
 
         if(file.delete())
         {
-            try {
-                fh.DeleteHomeWork(name1,"Files/Vocabularys/VocabularysList");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
             System.out.println(name1);
         }
         else
@@ -424,13 +465,18 @@ public class gui extends JFrame {
     }
 
     public void AddVocabularyProds() throws Exception {
-        BufferedReader br = new BufferedReader(new FileReader("Files/Vocabularys/VocabularysList"));
-        String CurrentLine;
-        while ((CurrentLine = br.readLine()) != null) {
-            String[] CurrentLineSplited = CurrentLine.split(",");
-            String prod = CurrentLineSplited[0] + " " + CurrentLineSplited[1] + " " + CurrentLineSplited[2];
-            VocabularyEdit.addItem(prod);
-            Vocabulary.addItem(prod);
+        File folder = new File("Files/Vocabularys/");
+        File[] listOfFiles = folder.listFiles();
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                String[] name = listOfFiles[i].getName().split(",");
+                String names = name[0]+" "+name[1]+" "+name[2];
+                Vocabulary.addItem(names);
+                VocabularyEdit.addItem(names);
+            } else if (listOfFiles[i].isDirectory()) {
+                System.out.println("Directory " + listOfFiles[i].getName());
+            }
         }
     }
 
@@ -440,18 +486,6 @@ public class gui extends JFrame {
             fh.MakeNewVocabulary(new File(CreateNewFileName));
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
-
-        try {
-            if (!name.equals(NameOfVocabularyFile(true))) {
-                FileWriter fw = new FileWriter("Files/Vocabularys/VocabularysList", true);
-                fw.write(NameOfVocabularyFile(true) + "\n");
-                fw.close();
-
-                name = NameOfVocabularyFile(true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
     }
@@ -534,6 +568,7 @@ public class gui extends JFrame {
         NewWord2.setFont(new Font(font, Font.PLAIN, fontSize));
         addWordEdit.setFont(new Font(font, Font.PLAIN, fontSize));
         question.setFont(new Font(font, Font.PLAIN, fontSize+3));
+        rightAsnwerCounter.setFont(new Font(font, Font.PLAIN, fontSize));
 
         rootName.setBackground(color);
         tab1.setBackground(color);
